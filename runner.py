@@ -25,10 +25,10 @@ def main():
 # print a certain grid, given an index
 def print_grid(grids, i):
     print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
-    print("Agent: " + str(get_position('A', grids[i])[::-1] ) + ", Target: " + str(get_position('T', grids[i])[::-1] ) )
-    for x in range(GRID_SIZE):
-        for y in range(GRID_SIZE):
-            cell = grids[i][x][y]
+    print("Agent: " + str(get_position('A', grids[i]) ) + ", Target: " + str(get_position('T', grids[i]) ) )
+    for y in range(GRID_SIZE):
+        for x in range(GRID_SIZE):
+            cell = grids[i][y][x]
             if cell == 1: 
                 print(f"{Fore.BLACK}{Back.BLACK}[ ]" + f"{Style.RESET_ALL}", end="")
             elif cell == 'A' or cell == 'T':
@@ -45,9 +45,9 @@ def print_all_grids(grids):
         print()
 
 def get_position(char, grid):
-    for x in range(GRID_SIZE):
-        for y in range(GRID_SIZE):
-            if grid[x][y] == char:
+    for y in range(GRID_SIZE):
+        for x in range(GRID_SIZE):
+            if grid[y][x] == char:
                 return [x, y]
     return [-1, -1]
 
