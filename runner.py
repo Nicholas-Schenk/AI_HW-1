@@ -19,13 +19,14 @@ def main():
 
     #run repeated forward a star on all grids
     for i in grids:
+        #note: positions are stored in row-column order
         agent_pos, target_pos = get_position('A', i), get_position('T', i)
         forward_astar(i, agent_pos, target_pos)
 
 # print a certain grid, given an index
 def print_grid(grids, i):
     print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
-    print("Agent: " + str(get_position('A', grids[i]) ) + ", Target: " + str(get_position('T', grids[i]) ) )
+    print("Agent: " + str(get_position('A', grids[i])[::-1]) + ", Target: " + str(get_position('T', grids[i])[::-1]) )
     for y in range(GRID_SIZE):
         for x in range(GRID_SIZE):
             cell = grids[i][y][x]
@@ -44,11 +45,12 @@ def print_all_grids(grids):
             print("---", end="")
         print()
 
+#search a grid for specific character or flag, returns it's coordinate
 def get_position(char, grid):
     for y in range(GRID_SIZE):
         for x in range(GRID_SIZE):
             if grid[y][x] == char:
-                return [x, y]
+                return [y, x]
     return [-1, -1]
 
 if __name__ == "__main__":
