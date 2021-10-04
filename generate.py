@@ -1,9 +1,8 @@
 import random
-import timeit
 
-GRID_SIZE = 101
-NUM_GRIDS = 50 
-
+GRID_SIZE = 101 - 89
+NUM_GRIDS = 50 - 45
+#defaults are grid size 101 and 50 grids, smaller numbers are only used for testing purposes!
 
 #used for generating random start point
 list1 = range(GRID_SIZE)
@@ -72,7 +71,7 @@ def dfs(grid, x, y, visited, closed, count2):
 def generate():
     width, height, num_arrs = GRID_SIZE, GRID_SIZE, NUM_GRIDS
     #generate 3D array
-    grids = [[[0 for i in range(width)]  for j in range(height)] for k in range(num_arrs)] 
+    grids = [[[0 for i in range(width)] for j in range(height)] for k in range(num_arrs)] 
     for i in grids:
 
         visited = [[0 for x in range(width)]  for y in range(height)]
@@ -81,7 +80,7 @@ def generate():
         #generate random start position
         start_pos_x = random.choice(list1)
         start_pos_y = random.choice(list1)
-        
+
         dfs(i, start_pos_x, start_pos_y, visited, closed, 0)
 
         #check if there are any unvisited nodes and repeat search until there aren't
@@ -99,14 +98,33 @@ def generate():
                 break
             else :
                 dfs(i, x, y, visited, closed, 0)
+
+
+        #assign agent start position
+        while True:
+            if i[start_pos_x][start_pos_y] == 0 and check_neighbors(i, start_pos_x, start_pos_y): 
+                i[start_pos_x][start_pos_y] = 'A'
+                break
+            start_pos_x = random.choice(list1)
+            start_pos_y = random.choice(list1)
+
+        #generate random target destination
+        while True:
+            target_pos_x = random.choice(list1)
+            target_pos_y = random.choice(list1)
+            if [target_pos_x, target_pos_y] != [start_pos_x, start_pos_y]:
+                i[target_pos_x][target_pos_y] = 'T'
+                break
+        
     return grids
 
-def main():
-    start = timeit.default_timer()
-    grids = generate()
-    stop = timeit.default_timer()
-    print('Runtime: ' + str(stop - start) + 'seconds (was ~3 sec for me)')
-
-if __name__ == "__main__":
-    main()
-    
+def check_neighbors(grid, x, y):
+    if x - 1 >= 0 and grid[x - 1][y] == 0:
+        return True
+    if x + 1 < GRID_SIZE and grid[x + 1][y] == 0:
+        return True
+    if y - 1 >= 0 and grid[x][y - 1] == 0:
+        return True
+    if y + 1 < GRID_SIZE and grid[x][y + 1] == 0:
+        return True
+    return False
