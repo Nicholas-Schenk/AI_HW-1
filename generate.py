@@ -99,7 +99,6 @@ def generate():
             else :
                 dfs(i, x, y, visited, closed, 0)
 
-
         #assign agent start position
         while True:
             if i[start_pos_x][start_pos_y] == 0 and check_neighbors(i, start_pos_x, start_pos_y): 

@@ -17,12 +17,15 @@ def main():
 
     print_all_grids(grids)
 
-    #run repeated forward a star
-    forward_astar
+    #run repeated forward a star on all grids
+    for i in grids:
+        agent_pos, target_pos = get_position('A', i), get_position('T', i)
+        forward_astar(i, agent_pos, target_pos)
 
 # print a certain grid, given an index
 def print_grid(grids, i):
-    print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]\n")
+    print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
+    print("Agent: " + str(get_position('A', grids[i])[::-1] ) + ", Target: " + str(get_position('T', grids[i])[::-1] ) )
     for x in range(GRID_SIZE):
         for y in range(GRID_SIZE):
             cell = grids[i][x][y]
@@ -40,6 +43,13 @@ def print_all_grids(grids):
         for x in range(GRID_SIZE):
             print("---", end="")
         print()
+
+def get_position(char, grid):
+    for x in range(GRID_SIZE):
+        for y in range(GRID_SIZE):
+            if grid[x][y] == char:
+                return [x, y]
+    return [-1, -1]
 
 if __name__ == "__main__":
     main()
