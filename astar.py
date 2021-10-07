@@ -37,7 +37,7 @@ def forward_astar(grid, agent_pos, target_pos, size):
 
         #get shortest path for what the agent observes in its current grid
         determine_path(agent_state, target_state, order, open_list, closed_list)
-        if len(open_list) == 0:
+        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
             return -1
         
@@ -56,8 +56,8 @@ def forward_astar(grid, agent_pos, target_pos, size):
 
         print_grid(GRID, agent_state, target_state.pos)
 
-    print("Agent reached the Target")  
-    return 0
+    print("Agent reached the Target in " + str(COUNTER) + " steps")  
+    return COUNTER
 
 #construct a grid representing what the agent sees at a given step
 def set_agent_grid(agent_grid, grid, agent_state, target_state):
@@ -111,12 +111,11 @@ def determine_path(agent_state, target_state, order, open_list, closed_list):
                 action_state.f_value = get_f_value(agent_state.pos, action_state.pos, target_state.pos)
 
                 #insert the successor state into the open list
-                heap_insert(action_state, order, open_list)
+                heap_insert(action_state, agent_action_cost + order, open_list)
                 order = order + 1
                
         #for action_state in actions:
             #print("added: " + action_state.to_string())
-        print()
 
 #implementation of repeated backward A*
 def backward_astar():

@@ -10,8 +10,8 @@ from State import State
 def main():
     start = timeit.default_timer()
 
-    #grids = generate(0)
-    grids = generate('Ex')
+    grids = generate(0)
+    #grids = generate('Ex')
     #note: grids are defined in 3D. 1st dimension is NUM_GRIDS, 2nd and 3rd are row and coloumn coordinates respectively
 
     global GRID_SIZE 
@@ -28,11 +28,13 @@ def main():
     for grid in grids:
         #note: positions are stored in row-column ordered coordinates
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
-        
+
         start = timeit.default_timer()
-        forward_astar(grid, agent_pos, target_pos, GRID_SIZE)
+        steps = forward_astar(grid, agent_pos, target_pos, GRID_SIZE)
         stop = timeit.default_timer()
-        print('Forward A* Runtime: ' + str(stop - start))
+        print('Forward A* Runtime: ' + str(stop - start) )
+
+        print_grid([grid], 0)
     
 # print a certain grid, given an index
 def print_grid(grids, i):
