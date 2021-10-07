@@ -69,7 +69,7 @@ def dfs(grid, x, y, visited, closed, count2):
 def generate(char):
     #return the example 5x5 grid if exmaple parameter passed in
     if char == 'Ex':
-        example_grid = [ [ [0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 1, 0], [0, 0, 'A', 1, 'T'] ] ]
+        example_grid = [ [ [0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 1, 1, 0], [0, 0, 'A', 1, 'T'] ] ]
         return example_grid
 
     width, height, num_arrs = GRID_SIZE, GRID_SIZE, NUM_GRIDS

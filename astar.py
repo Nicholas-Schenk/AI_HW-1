@@ -42,10 +42,14 @@ def forward_astar(grid, agent_pos, target_pos, size):
             return -1
         
         #trace path from target to agent
+        #grid_copy = list.copy(GRID)
         current = target_state
         while current.prev != agent_state:
+            x, y = current.pos
+            #grid_copy[x][y] = '-'
             current = current.prev
         current.prev = None
+    
 
         #move the agent
         x, y = agent_state.pos
@@ -112,6 +116,8 @@ def determine_path(agent_state, target_state, order, open_list, closed_list):
 
                 #insert the successor state into the open list
                 heap_insert(action_state, agent_action_cost + order, open_list)
+                #(F, ORDER, STATE)
+
                 order = order + 1
                
         #for action_state in actions:
@@ -174,6 +180,11 @@ def get_f_value(agent_pos, state_pos, target_pos):
         # f(s) = g(s) + h(s)
     return get_g_cost(agent_pos, state_pos) + manhattan_distance(state_pos, target_pos)
 
+# remove blocked off paths that the agent finds as it is looking for the shortest paths
+# it should modify the linked list that starts at target and ends at agent
+def filter_list(grid, agent_state, target_state):
+    return
+
 def print_list(list):
     for (f, o, state) in list:
         print(state.to_string() )
@@ -191,4 +202,5 @@ def print_grid(grid, agent_state, target_pos):
             else:
                 print(f"{Fore.WHITE}{Back.WHITE}[ ]" + f"{Style.RESET_ALL}", end="")
         print("")
+
 

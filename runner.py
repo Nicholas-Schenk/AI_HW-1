@@ -10,8 +10,8 @@ from State import State
 def main():
     start = timeit.default_timer()
 
-    grids = generate(0)
-    #grids = generate('Ex')
+    #grids = generate(0)
+    grids = generate('Ex')
     #note: grids are defined in 3D. 1st dimension is NUM_GRIDS, 2nd and 3rd are row and coloumn coordinates respectively
 
     global GRID_SIZE 
