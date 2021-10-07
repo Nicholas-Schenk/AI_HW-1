@@ -14,14 +14,12 @@ def dfs(grid, x, y, visited, closed, count2):
     # mark node as visited as soon as we visit :)
     visited[x][y] = 1
 
-
     #WHAT IS COUNT2?
         #python only allows for around 1000 levels of recursion. I feel like it should be extremely unlikely (0.7^1000, although ig they don't have to be consectuive because backtracking?) that we would exceed that, yet we do constantly?
         # the fact that this line is used so much makes me think there may be some bug i'm not seeing
     count2 +=1
     if(count2 > 950):
         return visited
-
 
     #mark the node as visited, then if we roll the dice and it is blocked, bactrack to the previous node
     if random.choice(list2) < 3:
@@ -68,7 +66,12 @@ def dfs(grid, x, y, visited, closed, count2):
     closed[x][y] = 1
     return visited
 
-def generate():
+def generate(char):
+    #return the example 5x5 grid if exmaple parameter passed in
+    if char == 'Ex':
+        example_grid = [ [ [0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 1, 1, 0], [0, 0, 'A', 1, 'T'] ] ]
+        return example_grid
+
     width, height, num_arrs = GRID_SIZE, GRID_SIZE, NUM_GRIDS
     #generate 3D array
     grids = [[[0 for i in range(width)] for j in range(height)] for k in range(num_arrs)] 

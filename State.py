@@ -21,5 +21,5 @@ class State:
     def to_set(self):
         return [self.pos, self.f_value, self.g_cost, self.search, self.prev]
 
-    def to_string(self):
-        return "[" + str(self.pos) + ", " + str(self.f_value) + ", " + str(self.g_cost) + ", " + str(self.search) + ", " + str(self.prev) + "]"
+    def to_string(self) -> str:
+        return "[pos=" + str(self.pos) + ", f=" + str(self.f_value) + ", g=" + str(self.g_cost) + ", s=" + str(self.search) + "]"
