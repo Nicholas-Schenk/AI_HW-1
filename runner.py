@@ -11,7 +11,8 @@ def main():
     start = timeit.default_timer()
 
     #grids = generate(0)
-    grids = generate('Ex')
+    #grids = generate('Ex')
+    grids = generate('10x10')
     #note: grids are defined in 3D. 1st dimension is NUM_GRIDS, 2nd and 3rd are row and coloumn coordinates respectively
 
     global GRID_SIZE 
@@ -22,20 +23,45 @@ def main():
     stop = timeit.default_timer()
     print('Grid Generation Runtime: ' + str(stop - start))
 
-    print_all_grids(grids)
+    #print_all_grids(grids)
+    reports = []
 
     #run repeated forward A* on all grids
     for grid in grids:
         #note: positions are stored in row-column ordered coordinates
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
-
-        start = timeit.default_timer()
-        steps = forward_astar(grid, agent_pos, target_pos, GRID_SIZE)
-        stop = timeit.default_timer()
-        print('Forward A* Runtime: ' + str(stop - start) )
+        
+        print_grid([grid], 0)
+        report_statement = ["Repeated Forward A* Higher G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
+        params = (grid, agent_pos, target_pos, GRID_SIZE, -1, report_statement)
+        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
+        reports.append(run_and_report(forward_astar, params))
 
         print_grid([grid], 0)
-    
+        report_statement = ["Repeated Forward A* Lower G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
+        params = (grid, agent_pos, target_pos, GRID_SIZE, 1, report_statement)
+        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
+        reports.append(run_and_report(forward_astar, params))
+
+        #report_all_results(reports)
+        reports.clear()
+
+def report_all_results(reports):
+    for report in reports:
+        print(report)
+
+def run_and_report(forward_astar, params):
+    start = timeit.default_timer()
+    results = forward_astar(params[0], params[1], params[2], params[3], params[4])
+    stop = timeit.default_timer()
+    results.append(round(stop - start, 4))
+
+    #if results[0] == -1 or results[1] == -1:
+        #return params[5][0] + ": FAILED in " + str(results[2]) + params[5][3]
+
+    return params[5][0]+ str(results[0]) + params[5][1] + str(results[1]) + params[5][2] + str(results[2]) + params[5][3]
+
+
 # print a certain grid, given an index
 def print_grid(grids, i):
     print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")

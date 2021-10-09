@@ -10,12 +10,12 @@ class State:
         self.pos = pos
     
     #create State object from a set containing raw State info
-    def from_set(State):
-        state = State(State[0])
-        state.f_value = State[1]
-        state.g_cost = State[2]
-        state.search = State[3]
-        state.prev = State[4]
+    def from_set(state_set):
+        state = State(state_set[0])
+        state.f_value = state_set[1]
+        state.g_cost = state_set[2]
+        state.search = state_set[3]
+        state.prev = state_set[4]
         return state
 
     def to_set(self):

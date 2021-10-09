@@ -1,11 +1,12 @@
-from os import stat
 from colorama import Fore, Back, Style
 import heapq as hq
 
 from State import State
 
 #implementation of repeated forward A*
-def forward_astar(grid, agent_pos, target_pos, size):
+def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
+    print("agent start: " + str(agent_pos))
+
     agent_state = State(agent_pos)
     agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
     target_state = State(target_pos)
@@ -18,6 +19,7 @@ def forward_astar(grid, agent_pos, target_pos, size):
     GRID = [[0] * GRID_SIZE for i in range(GRID_SIZE)]
     GRID = set_agent_grid(GRID, grid, agent_state, target_state)
     COUNTER = 0
+    EXPANSIONS = 0
 
     print_grid(GRID, agent_state, target_state.pos)
     
@@ -33,13 +35,13 @@ def forward_astar(grid, agent_pos, target_pos, size):
         open_list = []
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
-        heap_insert(agent_state, order, open_list)
+        heap_insert(agent_state, order, open_list, g_tie_breaker)
 
         #get shortest path for what the agent observes in its current grid
-        determine_path(agent_state, target_state, order, open_list, closed_list)
+        EXPANSIONS = determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
         if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
-            return -1
+            return [-1, -1]
         
         #trace path from target to agent
         #grid_copy = list.copy(GRID)
@@ -50,7 +52,6 @@ def forward_astar(grid, agent_pos, target_pos, size):
             current = current.prev
         current.prev = None
     
-
         #move the agent
         x, y = agent_state.pos
         GRID[x][y] = 0
@@ -60,8 +61,9 @@ def forward_astar(grid, agent_pos, target_pos, size):
 
         print_grid(GRID, agent_state, target_state.pos)
 
-    print("Agent reached the Target in " + str(COUNTER) + " steps")  
-    return COUNTER
+
+    #print_grid(GRID, agent_state, target_state.pos)
+    return [COUNTER, EXPANSIONS]
 
 #construct a grid representing what the agent sees at a given step
 def set_agent_grid(agent_grid, grid, agent_state, target_state):
@@ -83,11 +85,12 @@ def set_agent_grid(agent_grid, grid, agent_state, target_state):
     return agent_grid
 
 #get shortest path for what the agent observes in its current grid
-def determine_path(agent_state, target_state, order, open_list, closed_list):
+def determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, expansions):
     # while g(goal_state) > minimum f value state in the heap
     while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
-        state = hq.heappop(open_list)[2]
-        #print("expanding: " + str(state.to_string()))
+        state = hq.heappop(open_list)[3]
+        print("expanding: " + str(state.to_string()))
+        expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
 
@@ -97,7 +100,7 @@ def determine_path(agent_state, target_state, order, open_list, closed_list):
             #agent found the target, break out of loop
             if action_state.pos == target_state.pos:
                 target_state.prev = state
-                return
+                return expansions
 
             if action_state.search < COUNTER:
                 action_state.g_cost = GRID_SIZE**2
@@ -115,13 +118,14 @@ def determine_path(agent_state, target_state, order, open_list, closed_list):
                 action_state.f_value = get_f_value(agent_state.pos, action_state.pos, target_state.pos)
 
                 #insert the successor state into the open list
-                heap_insert(action_state, agent_action_cost + order, open_list)
-                #(F, ORDER, STATE)
-
+                heap_insert(action_state, order, open_list, g_tie_breaker)
                 order = order + 1
                
-        #for action_state in actions:
-            #print("added: " + action_state.to_string())
+        for action_state in actions:
+            print("added: " + action_state.to_string())
+        print()
+
+    return expansions
 
 #implementation of repeated backward A*
 def backward_astar():
@@ -154,9 +158,10 @@ def get_actions(state, closed_list):
         neighbors.append(right_state)
     return neighbors
 
-#insert a state into the min heap open_list, calculates f-value on insertion
-def heap_insert(state, order, open_list):
-    tuple = (state.f_value, order, state)
+#insert a state into the min heap open_list as a tuple, order of values in the tuple matters for breaking ties
+def heap_insert(state, order, open_list, g_tie_breaker):
+    # g_tie_breaker value of -1 means higher g costs used to break ties, value of 1 means lower ones are used
+    tuple = (state.f_value, state.g_cost * g_tie_breaker, order, state)
     hq.heappush(open_list, tuple)
 
 def check_list(action_state, closed_list):
@@ -166,9 +171,8 @@ def check_list(action_state, closed_list):
 
 def check_and_remove(action_state, open_list):
     for tuple in open_list:
-        if tuple[2].pos == action_state.pos:
+        if tuple[3].pos == action_state.pos:
             open_list.remove(tuple)
-
 
 def manhattan_distance(start_pos, end_pos):
     return abs(start_pos[0] - end_pos[0]) + abs(start_pos[1] - end_pos[1])
@@ -179,11 +183,6 @@ def get_g_cost(agent_pos, state_pos):
 def get_f_value(agent_pos, state_pos, target_pos):
         # f(s) = g(s) + h(s)
     return get_g_cost(agent_pos, state_pos) + manhattan_distance(state_pos, target_pos)
-
-# remove blocked off paths that the agent finds as it is looking for the shortest paths
-# it should modify the linked list that starts at target and ends at agent
-def filter_list(grid, agent_state, target_state):
-    return
 
 def print_list(list):
     for (f, o, state) in list:
