@@ -9,3 +9,6 @@ created runner.py and astar.py. Both are uninfinished in terms of implmentaiton.
 
 *Update 10/6*
 implemented forward repeated A* search
+
+*_Update 10/13_*
+forward a* may have some issues, backward a* may be implemented
