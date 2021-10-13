@@ -89,7 +89,6 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
     # while g(goal_state) > minimum f value state in the heap
     while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
         state = hq.heappop(open_list)[3]
-        print("expanding: " + str(state.to_string()))
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
@@ -121,15 +120,114 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
                 heap_insert(action_state, order, open_list, g_tie_breaker)
                 order = order + 1
                
-        for action_state in actions:
-            print("added: " + action_state.to_string())
-        print()
+        #for action_state in actions:
+            #print("added: " + action_state.to_string())
+        #print()
 
     return expansions
+def backward_determine_path(agent_state, target_state, expansions):
+    open_list = []
+    open_list2 = []
+    closed_list = []
+    dummy_var = 0
+    #STEP 2: start loop
+    while dummy_var==0 or len(open_list) > 0:
+
+        #STEP 3: if we have just started, set cur_state to target_state. Otherwise, set it to the lowest in the heap and remove it from the open list
+        if dummy_var != 0:
+            cur_state = hq.heappop(open_list)[3]
+            open_list2.remove(cur_state)
+        else:
+            cur_state=target_state
+
+        expansions+=1
+        #print("expanded: "+ str(cur_state.pos) + " with f_value: "+ str(cur_state.f_value)+ " with g_cost: "+ str(cur_state.g_cost))
+
+        #STEP 4: put cur into closed list
+        closed_list.append(cur_state)
+
+        #STEP 4: find out which neighbors are valid
+        neighbors = get_actions2(cur_state, closed_list, open_list2)
+
+        #STEP 6: create states for valid neighbors, insert them into the heap
+        for neighbor in neighbors:
+            #STEP 7: if we found the agent, we need to determine the shortest path based on the g-costs we have in the grid.
+            neighbor.prev = cur_state
+            if(neighbor.pos == agent_state.pos):
+                print("FOUND IT")
+                order = [neighbor]
+                while neighbor.prev.pos != target_state.pos: 
+                    neighbor = neighbor.prev
+                    order.append(neighbor)
+                order.append(target_state)
+                return order, expansions
+            #If #we didn't find the target, we should calculate the neighbors f_value and g_cost and add them to the grid.
+            #then we push the node onto the heap
+            dummy_var+=1
+            current_state = neighbor
+            current_state.f_value = get_f_value(target_state.pos, neighbor.pos, agent_state.pos)
+            current_state.g_cost = get_g_cost(target_state.pos, neighbor.pos )
+            #print("set g_cost of: "+ str(current_state.pos))
+            tuple = (current_state.f_value, current_state.g_cost , dummy_var, current_state)
+            hq.heappush(open_list, tuple)
+            open_list2.append(current_state)
+    print("DIDN'T FIND IT")
+    return [], expansions
 
 #implementation of repeated backward A*
-def backward_astar():
-    return 0
+def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
+    print("agent start: " + str(agent_pos))
+
+    agent_state = State(agent_pos)
+    agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
+    target_state = State(target_pos)
+
+    global GRID_SIZE
+    global GRID
+    global COUNTER
+    
+    GRID_SIZE = size
+    GRID = [[0] * GRID_SIZE for i in range(GRID_SIZE)]
+    GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+    COUNTER = 0
+    EXPANSIONS = 0
+
+    print_grid(GRID, agent_state, target_state.pos)
+    
+    while agent_state.pos != target_pos:
+        COUNTER = COUNTER + 1
+        agent_state.g_cost = 0
+        agent_state.search = COUNTER
+
+        target_state.g_cost = GRID_SIZE**2
+        target_state.search = COUNTER
+
+        #open list is a min heap representing list of tuples (key, order of insertion, value) using key to maintain increasing f-values in the heap
+        open_list = []
+        closed_list = []
+        order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
+        heap_insert(agent_state, order, open_list, g_tie_breaker)
+
+        #get shortest path for what the agent observes in its current grid
+        ordered_list, EXPANSIONS = backward_determine_path(agent_state, target_state, EXPANSIONS)
+        if len(ordered_list) == 0:
+            print("Agent cannot reach the Target")
+            return [-1, -1]
+        
+
+        #move the agent
+        current = ordered_list[1]
+        x, y = agent_state.pos
+        GRID[x][y] = 0
+        agent_state.pos = current.pos
+        agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
+        GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+
+        print_grid(GRID, agent_state, target_state.pos)
+
+
+    #print_grid(GRID, agent_state, target_state.pos)
+    return [COUNTER, EXPANSIONS]
 
 #checks neighbors of a state for non-blocked states, returns a list of unblocked state tuples
 def get_actions(state, closed_list):
@@ -155,6 +253,32 @@ def get_actions(state, closed_list):
         neighbors.append(left_state)
     #check right direction
     if y + 1 < GRID_SIZE and GRID[x][y + 1] != 1 and not check_list(right_state, closed_list):
+        neighbors.append(right_state)
+    return neighbors
+
+def get_actions2(state, closed_list, open_list):
+    x, y = state.pos
+    UP = [x - 1, y]
+    up_state = State(UP)
+    DOWN = [x + 1, y]
+    down_state = State(DOWN)
+    LEFT = [x, y - 1]
+    left_state = State(LEFT)
+    RIGHT = [x, y + 1]
+    right_state = State(RIGHT)
+
+    neighbors = []
+    #check up direction
+    if x - 1 >= 0 and GRID[x - 1][y] != 1 and not check_list(up_state, closed_list) and not check_list(up_state, open_list):
+        neighbors.append(up_state)
+    #check down direction
+    if x + 1 < GRID_SIZE and GRID[x + 1][y] != 1 and not check_list(down_state, closed_list) and not check_list(down_state, open_list):
+        neighbors.append(down_state)
+    #check left direction
+    if y - 1 >= 0 and GRID[x][y - 1] != 1 and not check_list(left_state, closed_list) and not check_list(left_state, open_list):
+        neighbors.append(left_state)
+    #check right direction
+    if y + 1 < GRID_SIZE and GRID[x][y + 1] != 1 and not check_list(right_state, closed_list)and not check_list(right_state, open_list):
         neighbors.append(right_state)
     return neighbors
 

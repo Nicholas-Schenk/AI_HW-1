@@ -3,7 +3,7 @@ import timeit
 import heapq as hq
 
 from generate import generate
-from astar import forward_astar
+from astar import forward_astar, backward_astar
 from State import State
 
 #generate all grids 
@@ -34,16 +34,23 @@ def main():
         print_grid([grid], 0)
         report_statement = ["Repeated Forward A* Higher G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
         params = (grid, agent_pos, target_pos, GRID_SIZE, -1, report_statement)
+
         #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
-        reports.append(run_and_report(forward_astar, params))
+        #reports.append(run_and_report(forward_astar, params))
 
         print_grid([grid], 0)
-        report_statement = ["Repeated Forward A* Lower G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
+        report_statement = ["Repeated Backward A* Lower G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
         params = (grid, agent_pos, target_pos, GRID_SIZE, 1, report_statement)
         #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
-        reports.append(run_and_report(forward_astar, params))
+        reports.append(run_and_report(backward_astar, params))
 
-        #report_all_results(reports)
+        print_grid([grid], 0)
+        report_statement = ["Repeated Backward A* Higher G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
+        params = (grid, agent_pos, target_pos, GRID_SIZE, -1, report_statement)
+        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
+        reports.append(run_and_report(backward_astar, params))
+
+        report_all_results(reports)
         reports.clear()
 
 def report_all_results(reports):
