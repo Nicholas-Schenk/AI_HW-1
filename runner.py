@@ -78,7 +78,7 @@ def report_all_results(reports):
 # print a certain grid, given an index
 def print_grid(grids, i):
     print("Grid: " + str(i) + ", Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
-    print("Agent: " + str(get_position('A', grids[i])[::-1]) + ", Target: " + str(get_position('T', grids[i])[::-1]) )
+    print("Agent: " + str(get_position('A', grids[i])) + ", Target: " + str(get_position('T', grids[i])) )
 
     print(end="  ")
     for column in range(GRID_SIZE):

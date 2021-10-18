@@ -417,7 +417,7 @@ def print_list(list):
 
 def print_grid(grid, agent_state, target_pos):
     print("Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
-    print("Agent: " + str(agent_state.pos[::-1]) + ", Target: " + str(target_pos[::-1]) )
+    print("Agent: " + str(agent_state.pos) + ", Target: " + str(target_pos) )
 
     print(end="  ")
     for column in range(GRID_SIZE):
