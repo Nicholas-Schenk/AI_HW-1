@@ -1,11 +1,11 @@
 from colorama import Fore, Back, Style
 import heapq as hq
+import random
 
 from State import State
 
 #implementation of repeated forward A*
 def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
-    print("agent start: " + str(agent_pos))
 
     agent_state = State(agent_pos)
     agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
@@ -21,7 +21,7 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
     COUNTER = 0
     EXPANSIONS = 0
 
-    print_grid(GRID, agent_state, target_state.pos)
+    #print_grid(GRID, agent_state, target_state.pos)
     
     while agent_state.pos != target_pos:
         COUNTER = COUNTER + 1
@@ -44,13 +44,12 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
             return [-1, EXPANSIONS]
         
         #trace path from target to agent
-        #grid_copy = list.copy(GRID)
+        target_state = filter_path(target_state, agent_state)
         current = target_state
         while current.prev != agent_state:
-            x, y = current.pos
             current = current.prev
         current.prev = None
-    
+
         #move the agent
         x, y = agent_state.pos
         GRID[x][y] = 0
@@ -58,8 +57,7 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
         GRID = set_agent_grid(GRID, grid, agent_state, target_state)
 
-        print_grid(GRID, agent_state, target_state.pos)
-
+        #print_grid(GRID, agent_state, target_state.pos)
 
     #print_grid(GRID, agent_state, target_state.pos)
     return [COUNTER, EXPANSIONS]
@@ -91,7 +89,7 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
-        print("expanding: " + state.to_string())
+        #print("expanding: " + state.to_string())
         actions = get_actions(state, closed_list) 
         #actions represent possible successor states that can be visited following this current state
         for action_state in actions:
@@ -116,15 +114,35 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
                 action_state.f_value = get_f_value(agent_state.pos, action_state.pos, target_state.pos)
 
                 #insert the successor state into the open list
-                heap_insert(action_state, order, open_list, g_tie_breaker)
                 order = order + 1
+                heap_insert(action_state, order, open_list, g_tie_breaker)
+                
                
-        for action_state in actions:
-            print("added: " + action_state.to_string())
-        print()
+        #for action_state in actions:
+            #print("added: " + action_state.to_string())
+        #print()
 
     return expansions
 
+#check the path linked list for shortcuts
+def filter_path(source_state, dest_state):
+    state_list = []
+    current = source_state
+    while(current != None):
+        state_list.append(current)
+        current = current.prev
+
+    for i in range(len(state_list)):
+        neighbors = get_actions(state_list[i], [])
+        for neighbor in neighbors:
+           if neighbor.pos == dest_state.pos:
+                state_list = state_list[0:i + 1]
+                state_list.append(dest_state)
+                state_list[-2].prev = dest_state
+                
+                return source_state
+    return source_state
+        
 def backward_determine_path(agent_state, target_state, expansions):
     open_list = []
     open_list2 = []
@@ -176,7 +194,6 @@ def backward_determine_path(agent_state, target_state, expansions):
 
 #implementation of repeated backward A*
 def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
-    print("agent start: " + str(agent_pos))
 
     agent_state = State(agent_pos)
     agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
@@ -192,7 +209,7 @@ def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
     COUNTER = 0
     EXPANSIONS = 0
 
-    print_grid(GRID, agent_state, target_state.pos)
+    #print_grid(GRID, agent_state, target_state.pos)
     
     while agent_state.pos != target_pos:
         COUNTER = COUNTER + 1
@@ -223,7 +240,7 @@ def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
         GRID = set_agent_grid(GRID, grid, agent_state, target_state)
 
-        print_grid(GRID, agent_state, target_state.pos)
+        #print_grid(GRID, agent_state, target_state.pos)
 
 
     #print_grid(GRID, agent_state, target_state.pos)
@@ -272,7 +289,6 @@ def backward_determine_path2(agent_state, target_state, order, open_list, closed
     return expansions
     
 def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
-    print("agent start: " + str(agent_pos))
 
     agent_state = State(agent_pos)
     agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
@@ -289,7 +305,7 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
     COUNTER = 0
     EXPANSIONS = 0
 
-    print_grid(GRID, agent_state, target_state.pos)
+    #print_grid(GRID, agent_state, target_state.pos)
     
     while agent_state.pos != target_pos:
         COUNTER = COUNTER + 1
@@ -312,12 +328,7 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
             return [-1, EXPANSIONS]
         
         #trace path from target to agent
-        #grid_copy = list.copy(GRID)
         next_state = agent_state.prev
-        #while current.prev != agent_state:
-            #x, y = current.pos
-            #current = current.prev
-        #current.prev = None
     
         #move the agent
         x, y = agent_state.pos
@@ -326,11 +337,14 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
         agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
         GRID = set_agent_grid(GRID, grid, agent_state, target_state)
 
-        print_grid(GRID, agent_state, target_state.pos)
+        #print_grid(GRID, agent_state, target_state.pos)
 
-
+    #print final result
     #print_grid(GRID, agent_state, target_state.pos)
     return [COUNTER, EXPANSIONS]
+
+def adaptive_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
+    return []
 
 #checks neighbors of a state for non-blocked states, returns a list of unblocked state tuples
 def get_actions(state, closed_list):
@@ -419,21 +433,25 @@ def print_grid(grid, agent_state, target_pos):
     print("Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
     print("Agent: " + str(agent_state.pos) + ", Target: " + str(target_pos) )
 
-    print(end="  ")
     for column in range(GRID_SIZE):
-        print(" " + str(column), end=" ")
+        if 3 - len(str(column)) == 2:
+            print(" " + str(column), end=" ")
+        elif 3 - len(str(column)) == 1:
+            print(str(column), end=" ")
+        else: print(str(column), end="")
     print()
 
     for y in range(GRID_SIZE):
-        print(str(y), end = " ")
         for x in range(GRID_SIZE):
             cell = grid[y][x]
             if cell == 1: 
                 print(f"{Fore.BLACK}{Back.BLACK}[ ]" + f"{Style.RESET_ALL}", end="")
             elif cell == 'A' or cell == 'T':
                 print(f"{Fore.BLACK}{Back.WHITE}[" + str(cell) + "]" + f"{Style.RESET_ALL}", end="")
+            elif cell == '*':
+                print(f"{Fore.BLACK}{Back.WHITE}[" + str(cell) + "]" + f"{Style.RESET_ALL}", end="")
             else:
                 print(f"{Fore.WHITE}{Back.WHITE}[ ]" + f"{Style.RESET_ALL}", end="")
-        print()
+        print(" " + str(y))
 
 
