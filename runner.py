@@ -3,7 +3,7 @@ import timeit
 import heapq as hq
 
 from generate import generate
-from astar import forward_astar, backward_astar
+from astar import forward_astar, backward_astar, backward_astar2
 from State import State
 
 #generate all grids 
@@ -31,43 +31,51 @@ def main():
         #note: positions are stored in row-column ordered coordinates
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
         
-        print_grid([grid], 0)
-        report_statement = ["Repeated Forward A* Higher G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
-        params = (grid, agent_pos, target_pos, GRID_SIZE, -1, report_statement)
+        reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
 
-        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
-        #reports.append(run_and_report(forward_astar, params))
+        reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
 
-        print_grid([grid], 0)
-        report_statement = ["Repeated Backward A* Lower G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
-        params = (grid, agent_pos, target_pos, GRID_SIZE, 1, report_statement)
-        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
-        reports.append(run_and_report(backward_astar, params))
-
-        print_grid([grid], 0)
-        report_statement = ["Repeated Backward A* Higher G values: Agent reached the Target in ", " steps, with ",  " number of expansions in: ", " seconds"]
-        params = (grid, agent_pos, target_pos, GRID_SIZE, -1, report_statement)
-        #results = forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1)
-        reports.append(run_and_report(backward_astar, params))
+        reports.append(run_backward_astar(grid, agent_pos, target_pos, -1))
 
         report_all_results(reports)
         reports.clear()
 
-def report_all_results(reports):
-    for report in reports:
-        print(report)
-
-def run_and_report(forward_astar, params):
+def run_and_report(astar, params):
     start = timeit.default_timer()
-    results = forward_astar(params[0], params[1], params[2], params[3], params[4])
+    results = astar(params[0], params[1], params[2], params[3], params[4])
     stop = timeit.default_timer()
     results.append(round(stop - start, 4))
 
-    #if results[0] == -1 or results[1] == -1:
+      #if results[0] == -1 or results[1] == -1:
         #return params[5][0] + ": FAILED in " + str(results[2]) + params[5][3]
 
     return params[5][0]+ str(results[0]) + params[5][1] + str(results[1]) + params[5][2] + str(results[2]) + params[5][3]
 
+def run_forward_astar(grid, agent_pos, target_pos, g_tie_breaker):
+    print_grid([grid], 0)
+    report_statement = ""
+    if(g_tie_breaker == -1):
+        report_statement = ["Repeated Forward A* Higher G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+    else:
+        report_statement = ["Repeated Forward A* Lower G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+    params = (grid, agent_pos, target_pos, GRID_SIZE, g_tie_breaker, report_statement)
+    return run_and_report(forward_astar, params)
+
+def run_backward_astar(grid, agent_pos, target_pos, g_tie_breaker):
+    print_grid([grid], 0)
+    report_statement = ""
+    if(g_tie_breaker == -1):
+        report_statement = ["Repeated Backward A* Higher G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+    else:
+        report_statement = ["Repeated Backward A* Lower G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+    params = (grid, agent_pos, target_pos, GRID_SIZE, g_tie_breaker, report_statement)
+    return run_and_report(backward_astar2, params)
+
+def run_adaptive_astar():
+    return
+def report_all_results(reports):
+    for report in reports:
+        print(report)
 
 # print a certain grid, given an index
 def print_grid(grids, i):

@@ -31,7 +31,7 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         target_state.g_cost = GRID_SIZE**2
         target_state.search = COUNTER
 
-        #open list is a min heap representing list of tuples (key, order of insertion, value) using key to maintain increasing f-values in the heap
+        #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
         open_list = []
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
@@ -48,7 +48,6 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         current = target_state
         while current.prev != agent_state:
             x, y = current.pos
-            #grid_copy[x][y] = '-'
             current = current.prev
         current.prev = None
     
@@ -125,6 +124,7 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
         #print()
 
     return expansions
+
 def backward_determine_path(agent_state, target_state, expansions):
     open_list = []
     open_list2 = []
@@ -168,7 +168,7 @@ def backward_determine_path(agent_state, target_state, expansions):
             current_state.f_value = get_f_value(target_state.pos, neighbor.pos, agent_state.pos)
             current_state.g_cost = get_g_cost(target_state.pos, neighbor.pos )
             #print("set g_cost of: "+ str(current_state.pos))
-            tuple = (current_state.f_value, current_state.g_cost , dummy_var, current_state)
+            tuple = (current_state.f_value, -1 * current_state.g_cost , dummy_var, current_state)
             hq.heappush(open_list, tuple)
             open_list2.append(current_state)
     print("DIDN'T FIND IT")
@@ -202,7 +202,7 @@ def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         target_state.g_cost = GRID_SIZE**2
         target_state.search = COUNTER
 
-        #open list is a min heap representing list of tuples (key, order of insertion, value) using key to maintain increasing f-values in the heap
+        #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
         open_list = []
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
@@ -220,6 +220,109 @@ def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         x, y = agent_state.pos
         GRID[x][y] = 0
         agent_state.pos = current.pos
+        agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
+        GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+
+        print_grid(GRID, agent_state, target_state.pos)
+
+
+    #print_grid(GRID, agent_state, target_state.pos)
+    return [COUNTER, EXPANSIONS]
+
+def backward_determine_path2(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, expansions):
+    # while g(agent_state) < minimum f value state in the heap
+    while len(open_list) > 0 and agent_state.g_cost > open_list[0][0]:
+        state = hq.heappop(open_list)[3]
+        expansions = expansions + 1
+        #mark the minmum f value state as visited
+        closed_list.append(state)
+        #print("expanding: " + state.to_string())
+        actions = get_actions(state, closed_list) 
+        #actions represent possible successor states that can be visited following this current state
+        for action_state in actions:
+            #agent found the target, break out of loop
+            if action_state.pos == agent_state.pos:
+                agent_state.prev = state
+                return expansions
+
+            if action_state.search < COUNTER:
+                action_state.g_cost = GRID_SIZE**2
+                action_state.search = COUNTER
+
+            agent_action_cost = get_g_cost(target_state.pos, action_state.pos)
+            #if action_state.g_cost > state.g_cost + agent_action_cost:
+            if action_state.g_cost > target_state.g_cost + agent_action_cost:
+
+                #set updated g cost for next state and pointer back to source state
+                action_state.g_cost = target_state.g_cost + agent_action_cost
+                action_state.prev = state
+
+                #remove the action from the open list if it currently aready exists
+                check_and_remove(action_state, open_list)
+                action_state.f_value = get_f_value(agent_state.pos, action_state.pos, target_state.pos)
+
+                #insert the successor state into the open list
+                heap_insert(action_state, order, open_list, g_tie_breaker)
+                order = order + 1
+               
+        #for action_state in actions:
+            #print("added: " + action_state.to_string())
+        #print()
+
+    return expansions
+    
+def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
+    print("agent start: " + str(agent_pos))
+
+    agent_state = State(agent_pos)
+    agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
+    target_state = State(target_pos)
+    target_state.f_value = get_f_value(agent_pos, target_pos, target_pos)
+
+    global GRID_SIZE
+    global GRID
+    global COUNTER
+    
+    GRID_SIZE = size
+    GRID = [[0] * GRID_SIZE for i in range(GRID_SIZE)]
+    GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+    COUNTER = 0
+    EXPANSIONS = 0
+
+    print_grid(GRID, agent_state, target_state.pos)
+    
+    while agent_state.pos != target_pos:
+        COUNTER = COUNTER + 1
+        agent_state.g_cost = GRID_SIZE**2
+        agent_state.search = COUNTER
+
+        target_state.g_cost = 0
+        target_state.search = COUNTER
+
+        #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
+        open_list = []
+        closed_list = []
+        order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
+        heap_insert(target_state, order, open_list, g_tie_breaker)
+
+        #get shortest path for what the agent observes in its current grid
+        EXPANSIONS = backward_determine_path2(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
+        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
+            print("Agent cannot reach the Target")
+            return [-1, -1]
+        
+        #trace path from target to agent
+        #grid_copy = list.copy(GRID)
+        next_state = agent_state.prev
+        #while current.prev != agent_state:
+            #x, y = current.pos
+            #current = current.prev
+        #current.prev = None
+    
+        #move the agent
+        x, y = agent_state.pos
+        GRID[x][y] = 0
+        agent_state.pos = next_state.pos
         agent_state.f_value = get_f_value(agent_state.pos, agent_state.pos, target_pos)
         GRID = set_agent_grid(GRID, grid, agent_state, target_state)
 
