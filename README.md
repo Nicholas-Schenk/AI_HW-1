@@ -15,5 +15,5 @@ forward a* may have some issues, backward a* may be implemented
 
 
 *_Update 10/17_*
-backward a* implementation that is more consistent with current forward a* implementation added
-higher g-value bug still present for grids with blocked off target
+backward a* implementation that is more consistent with current forward a* implementation added.
+the higher g-value bug is still present for grids with blocked off target
