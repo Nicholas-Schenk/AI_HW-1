@@ -41,7 +41,7 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         EXPANSIONS = determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
         if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
-            return [-1, -1]
+            return [-1, EXPANSIONS]
         
         #trace path from target to agent
         #grid_copy = list.copy(GRID)
@@ -91,7 +91,7 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
-
+        print("expanding: " + state.to_string())
         actions = get_actions(state, closed_list) 
         #actions represent possible successor states that can be visited following this current state
         for action_state in actions:
@@ -119,9 +119,9 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
                 heap_insert(action_state, order, open_list, g_tie_breaker)
                 order = order + 1
                
-        #for action_state in actions:
-            #print("added: " + action_state.to_string())
-        #print()
+        for action_state in actions:
+            print("added: " + action_state.to_string())
+        print()
 
     return expansions
 
@@ -309,7 +309,7 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
         EXPANSIONS = backward_determine_path2(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
         if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
-            return [-1, -1]
+            return [-1, EXPANSIONS]
         
         #trace path from target to agent
         #grid_copy = list.copy(GRID)
@@ -418,7 +418,14 @@ def print_list(list):
 def print_grid(grid, agent_state, target_pos):
     print("Size:[" + str(GRID_SIZE) + ", " + str(GRID_SIZE) + "]")
     print("Agent: " + str(agent_state.pos[::-1]) + ", Target: " + str(target_pos[::-1]) )
+
+    print(end="  ")
+    for column in range(GRID_SIZE):
+        print(" " + str(column), end=" ")
+    print()
+
     for y in range(GRID_SIZE):
+        print(str(y), end = " ")
         for x in range(GRID_SIZE):
             cell = grid[y][x]
             if cell == 1: 
@@ -427,6 +434,6 @@ def print_grid(grid, agent_state, target_pos):
                 print(f"{Fore.BLACK}{Back.WHITE}[" + str(cell) + "]" + f"{Style.RESET_ALL}", end="")
             else:
                 print(f"{Fore.WHITE}{Back.WHITE}[ ]" + f"{Style.RESET_ALL}", end="")
-        print("")
+        print()
 
 
