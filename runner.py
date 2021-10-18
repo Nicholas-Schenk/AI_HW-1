@@ -32,8 +32,8 @@ def main():
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
         
         print_grid(grid, num)
-        #reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
-        #reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
+        reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
+        reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
         reports.append(run_backward_astar(grid, agent_pos, target_pos, -1))
 
         report_all_results(reports)
