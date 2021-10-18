@@ -328,6 +328,7 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
             return [-1, EXPANSIONS]
         
         #trace path from target to agent
+        target_state = filter_path(target_state, agent_state)
         next_state = agent_state.prev
     
         #move the agent

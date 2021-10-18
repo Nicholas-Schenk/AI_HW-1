@@ -32,8 +32,8 @@ def main():
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
         
         print_grid(grid, num)
-        reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
-        reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
+        #reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
+        #reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
         reports.append(run_backward_astar(grid, agent_pos, target_pos, -1))
 
         report_all_results(reports)
@@ -52,34 +52,34 @@ def run_and_report(astar, params):
     results.append(round(stop - start, 4))
 
     if results[0] == -1 or results[1] == -1:
-        return params[5][0][0:-26] + ": FAILED with " + str(results[1]) + " expansions in "+ str(results[2]) + params[5][3]
+        return params[5][0][0:-25] + "\tFAILED with " + str(results[1]) + " expansions in "+ str(results[2]) + params[5][3]
 
     return params[5][0]+ str(results[0]) + params[5][1] + str(results[1]) + params[5][2] + str(results[2]) + params[5][3]
 
 def run_forward_astar(grid, agent_pos, target_pos, g_tie_breaker):
     report_statement = ""
     if(g_tie_breaker == -1):
-        report_statement = ["Repeated Forward A* Higher G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Forward A* Higher G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     else:
-        report_statement = ["Repeated Forward A* Lower G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Forward A* Lower G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     params = (grid, agent_pos, target_pos, GRID_SIZE, g_tie_breaker, report_statement)
     return run_and_report(forward_astar, params)
 
 def run_backward_astar(grid, agent_pos, target_pos, g_tie_breaker):
     report_statement = ""
     if(g_tie_breaker == -1):
-        report_statement = ["Repeated Backward A* Higher G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Backward A* Higher G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     else:
-        report_statement = ["Repeated Backward A* Lower G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Backward A* Lower G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     params = (grid, agent_pos, target_pos, GRID_SIZE, g_tie_breaker, report_statement)
     return run_and_report(backward_astar2, params)
 
 def run_adaptive_astar(grid, agent_pos, target_pos, g_tie_breaker):
     report_statement = ""
     if(g_tie_breaker == -1):
-        report_statement = ["Repeated Adaptive A* Higher G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Adaptive A* Higher G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     else:
-        report_statement = ["Repeated Adaptive A* Lower G values: Agent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
+        report_statement = ["Repeated Adaptive A* Lower G values:\tAgent reached Target in ", " steps, with ",  " expansions in: ", " seconds"]
     params = (grid, agent_pos, target_pos, GRID_SIZE, g_tie_breaker, report_statement)
     return run_and_report(adaptive_astar, params)
 
