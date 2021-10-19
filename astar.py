@@ -84,6 +84,8 @@ def set_agent_grid(agent_grid, grid, agent_state, target_state):
 #get shortest path for what the agent observes in its current grid
 def determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, expansions):
     # while g(goal_state) > minimum f value state in the heap
+    #print("DETERMINING PATH")
+    #print(target_state.g_cost)
     while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
         state = hq.heappop(open_list)[3]
         expansions = expansions + 1
@@ -96,6 +98,7 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
             #agent found the target, break out of loop
             if action_state.pos == target_state.pos:
                 target_state.prev = state
+
                 return expansions
 
             if action_state.search < COUNTER:
@@ -344,8 +347,150 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
     #print_grid(GRID, agent_state, target_state.pos)
     return [COUNTER, EXPANSIONS]
 
+
+
+
+
+
+
+
+
+
+
+def adaptive_set_heuristic(agent_state):
+    heuristic_grid = [[0] * GRID_SIZE for i in range(GRID_SIZE)]
+    for i in range(GRID_SIZE):
+        for j in range(GRID_SIZE):
+            cur_state = State([i, j])
+            heuristic_grid[i][j] = get_g_cost(agent_state.pos, cur_state.pos)
+        #print(heuristic_grid[i])
+    return heuristic_grid
+
+
+
+ #get shortest path for what the agent observes in its current grid
+def adaptive_determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, expansions, heuristic_grid):
+    # while g(goal_state) > minimum f value state in the heap
+    #print("DETERMINING PATH")
+    #print(target_state.g_cost)
+    agent_state.g_cost = 0
+    while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
+        state = hq.heappop(open_list)[3]
+        expansions = expansions + 1
+        #mark the minmum f value state as visited
+        closed_list.append(state)
+        #print("expanding: " + state.to_string())
+        actions = get_actions(state, closed_list) 
+        #actions represent possible successor states that can be visited following this current state
+        for action_state in actions:
+            #agent found the target, break out of loop
+            if action_state.pos == target_state.pos:
+                target_state.prev = state
+                action_state.g_cost = state.g_cost + 1
+
+                #UPDATE HEURISTICS
+                #print("TARGET HAS G_COST OF: "+ str(action_state.g_cost))
+                for i in closed_list:
+                    heuristic_grid[i.pos[0]][i.pos[1]] = action_state.g_cost - i.g_cost 
+                #for i in heuristic_grid:
+                #    print(i)          
+                #print("------------------------------")       
+
+
+                return expansions
+
+            if action_state.search < COUNTER:
+                action_state.g_cost = GRID_SIZE**2
+                action_state.search = COUNTER
+
+            agent_action_cost = get_g_cost(state.pos, action_state.pos)
+            if action_state.g_cost > state.g_cost + agent_action_cost:
+                
+                #set updated g cost for next state and pointer back to source state
+                action_state.g_cost = state.g_cost + agent_action_cost
+                action_state.prev = state
+                #print("G COST: "+ str(action_state.g_cost))
+
+                #remove the action from the open list if it currently aready exists
+                check_and_remove(action_state, open_list)
+                #print("f-value: "+ str(heuristic_grid[action_state.pos[0]][action_state.pos[1]] + action_state.g_cost))
+                action_state.f_value = heuristic_grid[action_state.pos[0]][action_state.pos[1]] + action_state.g_cost
+
+                #insert the successor state into the open list
+                order = order + 1
+                heap_insert(action_state, order, open_list, g_tie_breaker)
+                
+               
+        #for action_state in actions:
+            #print("added: " + action_state.to_string())
+        #print()
+
+
+    return expansions
+
+
+
+
+
+
+
 def adaptive_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
-    return []
+    agent_state = State(agent_pos)
+    agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
+    target_state = State(target_pos)
+
+    global GRID_SIZE
+    global GRID
+    global COUNTER
+    
+    GRID_SIZE = size
+    GRID = [[0] * GRID_SIZE for i in range(GRID_SIZE)]
+    GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+    COUNTER = 0
+    EXPANSIONS = 0
+
+    heuristic_grid = adaptive_set_heuristic(target_state)
+
+    #print_grid(GRID, agent_state, target_state.pos)
+    
+    while agent_state.pos != target_pos:
+        COUNTER = COUNTER + 1
+        agent_state.g_cost = 0
+        agent_state.search = COUNTER
+
+        target_state.g_cost = GRID_SIZE**2
+        target_state.search = COUNTER
+
+        #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
+        open_list = []
+        closed_list = []
+        order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
+        heap_insert(agent_state, order, open_list, g_tie_breaker)
+
+        #get shortest path for what the agent observes in its current grid
+        EXPANSIONS = adaptive_determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS, heuristic_grid)
+        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
+            print("Agent cannot reach the Target")
+            return [-1, EXPANSIONS]
+        
+        #trace path from target to agent
+        target_state = filter_path(target_state, agent_state)
+        current = target_state
+        while current.prev != agent_state:
+            current = current.prev
+        current.prev = None
+
+        #move the agent
+        x, y = agent_state.pos
+        GRID[x][y] = 0
+        agent_state.pos = current.pos
+        agent_state.f_value = heuristic_grid[agent_state.pos[0]][agent_state.pos[1]] + get_g_cost(agent_state.pos, target_state.pos)
+        GRID = set_agent_grid(GRID, grid, agent_state, target_state)
+
+        #print_grid(GRID, agent_state, target_state.pos)
+
+    #print_grid(GRID, agent_state, target_state.pos)
+    return [COUNTER, EXPANSIONS]
 
 #checks neighbors of a state for non-blocked states, returns a list of unblocked state tuples
 def get_actions(state, closed_list):
