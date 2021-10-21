@@ -1,7 +1,7 @@
 import random
 
-GRID_SIZE = 101 - 89
-NUM_GRIDS = 50 - 30
+GRID_SIZE = 101
+NUM_GRIDS = 10
 #defaults are grid size 101 and 50 grids, smaller numbers are only used for testing purposes!
 
 #used for generating random start point

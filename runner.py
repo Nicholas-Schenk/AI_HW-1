@@ -3,7 +3,7 @@ import timeit
 import heapq as hq
 
 from generate import generate
-from astar import forward_astar, backward_astar, backward_astar2, adaptive_astar
+from astar import forward_astar, backward_astar2, adaptive_astar
 from State import State
 
 #generate all grids 
@@ -26,20 +26,42 @@ def main():
     reports = []
 
     #run repeated forward A* on all grids
+    adaptive_list = []
+    forward_list = []
+    backward_list = []
     num = 0
     for grid in grids:
         #note: positions are stored in row-column ordered coordinates
         agent_pos, target_pos = get_position('A', grid), get_position('T', grid)
         
-        print_grid(grid, num)
-        reports.append(run_adaptive_astar(grid, agent_pos, target_pos, -1))
-        reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
-        reports.append(run_forward_astar(grid, agent_pos, target_pos, 1))
-        reports.append(run_backward_astar(grid, agent_pos, target_pos, -1))
+        #print_grid(grid, num)
+        adaptive_list.append(adaptive_astar(grid, agent_pos, target_pos, GRID_SIZE, -1))
+        forward_list.append(forward_astar(grid, agent_pos, target_pos, GRID_SIZE, 1))
+        #reports.append(run_adaptive_astar(grid, agent_pos, target_pos, -1))
+        #reports.append(run_forward_astar(grid, agent_pos, target_pos, -1))
+        #forward_list.append(run_forward_astar(grid, agent_pos, target_pos, 1))
+        backward_list.append(backward_astar2(grid, agent_pos, target_pos, GRID_SIZE, -1))
 
-        report_all_results(reports)
-        reports.clear()
+        #report_all_results(reports)
+        #reports.clear()
         num+=1
+        print("Grid "+ str(num)+ " done")
+    adaptive_total = 0
+    forward_total = 0
+    backward_total = 0
+    for i in adaptive_list:
+        adaptive_total+=i[1]
+    for i in forward_list:
+        forward_total += i[1]
+    for i in backward_list:
+        if type(i[1]) == str:
+            print(i[1])
+            continue
+        backward_total += i[1]
+    print("Adaptive Average: "+ str(adaptive_total/NUM_GRIDS))
+    print("Forward Average (lower G values): "+ str(forward_total/NUM_GRIDS))
+    print("Backward Average: "+ str(backward_total/NUM_GRIDS))
+
 
 def report_all_results(reports):
     for report in reports:

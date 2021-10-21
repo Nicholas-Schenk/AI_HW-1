@@ -1,5 +1,7 @@
+from BinaryHeap import BinaryHeap
+from typing import Counter
 from colorama import Fore, Back, Style
-import heapq as hq
+#import heapq as hq
 import random
 
 from State import State
@@ -25,6 +27,11 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
     
     while agent_state.pos != target_pos:
         COUNTER = COUNTER + 1
+        if COUNTER > 0 and COUNTER%500 == 0: 
+            print_grid(GRID, agent_state, target_state.pos)
+            print(COUNTER)
+            if COUNTER == 5000:
+                return [-1, EXPANSIONS]
         agent_state.g_cost = 0
         agent_state.search = COUNTER
 
@@ -32,14 +39,14 @@ def forward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         target_state.search = COUNTER
 
         #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
-        open_list = []
+        open_list = BinaryHeap()
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
         heap_insert(agent_state, order, open_list, g_tie_breaker)
 
         #get shortest path for what the agent observes in its current grid
         EXPANSIONS = determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
-        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
+        if len(open_list.heap) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
             return [-1, EXPANSIONS]
         
@@ -86,8 +93,8 @@ def determine_path(agent_state, target_state, order, open_list, closed_list, g_t
     # while g(goal_state) > minimum f value state in the heap
     #print("DETERMINING PATH")
     #print(target_state.g_cost)
-    while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
-        state = hq.heappop(open_list)[3]
+    while len(open_list.heap) > 0 and target_state.g_cost > open_list.heap[0][0]:
+        state = open_list.pop()[3]
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
@@ -146,7 +153,7 @@ def filter_path(source_state, dest_state):
                 return source_state
     return source_state
         
-def backward_determine_path(agent_state, target_state, expansions):
+#def backward_determine_path(agent_state, target_state, expansions):
     open_list = []
     open_list2 = []
     closed_list = []
@@ -196,7 +203,7 @@ def backward_determine_path(agent_state, target_state, expansions):
     return [], expansions
 
 #implementation of repeated backward A*
-def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
+#def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
 
     agent_state = State(agent_pos)
     agent_state.f_value = get_f_value(agent_pos, agent_pos, target_pos)
@@ -251,8 +258,8 @@ def backward_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
 
 def backward_determine_path2(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, expansions):
     # while g(agent_state) < minimum f value state in the heap
-    while len(open_list) > 0 and agent_state.g_cost > open_list[0][0]:
-        state = hq.heappop(open_list)[3]
+    while len(open_list.heap) > 0 and agent_state.g_cost > open_list.heap[0][0]:
+        state = open_list.pop()[3]
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
@@ -319,14 +326,14 @@ def backward_astar2(grid, agent_pos, target_pos, size, g_tie_breaker):
         target_state.search = COUNTER
 
         #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
-        open_list = []
+        open_list = BinaryHeap()
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
         heap_insert(target_state, order, open_list, g_tie_breaker)
 
         #get shortest path for what the agent observes in its current grid
         EXPANSIONS = backward_determine_path2(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS)
-        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
+        if len(open_list.heap) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
             return [-1, EXPANSIONS]
         
@@ -374,8 +381,8 @@ def adaptive_determine_path(agent_state, target_state, order, open_list, closed_
     #print("DETERMINING PATH")
     #print(target_state.g_cost)
     agent_state.g_cost = 0
-    while len(open_list) > 0 and target_state.g_cost > open_list[0][0]:
-        state = hq.heappop(open_list)[3]
+    while len(open_list.heap) > 0 and target_state.g_cost > open_list.heap[0][0]:
+        state = open_list.pop()[3]
         expansions = expansions + 1
         #mark the minmum f value state as visited
         closed_list.append(state)
@@ -462,14 +469,14 @@ def adaptive_astar(grid, agent_pos, target_pos, size, g_tie_breaker):
         target_state.search = COUNTER
 
         #open list is a min heap representing list of tuples (primary key, 2ndary key, order of insertion, value) using key to maintain minimum ordering in the heap
-        open_list = []
+        open_list = BinaryHeap()
         closed_list = []
         order = 0   #order is extremely important for breaking ties for heap insertion, without it the program will crash
         heap_insert(agent_state, order, open_list, g_tie_breaker)
 
         #get shortest path for what the agent observes in its current grid
         EXPANSIONS = adaptive_determine_path(agent_state, target_state, order, open_list, closed_list, g_tie_breaker, EXPANSIONS, heuristic_grid)
-        if len(open_list) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
+        if len(open_list.heap) == 0 and manhattan_distance(agent_state.pos, target_state.pos) > 1:
             print("Agent cannot reach the Target")
             return [-1, EXPANSIONS]
         
@@ -519,7 +526,7 @@ def get_actions(state, closed_list):
         neighbors.append(right_state)
     return neighbors
 
-def get_actions2(state, closed_list, open_list):
+#def get_actions2(state, closed_list, open_list):
     x, y = state.pos
     UP = [x - 1, y]
     up_state = State(UP)
@@ -549,7 +556,8 @@ def get_actions2(state, closed_list, open_list):
 def heap_insert(state, order, open_list, g_tie_breaker):
     # g_tie_breaker value of -1 means higher g costs used to break ties, value of 1 means lower ones are used
     tuple = (state.f_value, state.g_cost * g_tie_breaker, order, state)
-    hq.heappush(open_list, tuple)
+    open_list.insert(tuple)
+    #hq.heappush(open_list, tuple)
 
 def check_list(action_state, closed_list):
     for state in closed_list:
@@ -557,9 +565,10 @@ def check_list(action_state, closed_list):
     return False
 
 def check_and_remove(action_state, open_list):
-    for tuple in open_list:
+    for tuple in open_list.heap:
         if tuple[3].pos == action_state.pos:
-            open_list.remove(tuple)
+            open_list.heap.remove(tuple)
+            open_list.reheap(0)
 
 def manhattan_distance(start_pos, end_pos):
     return abs(start_pos[0] - end_pos[0]) + abs(start_pos[1] - end_pos[1])
