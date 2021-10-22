@@ -1,6 +1,6 @@
 from colorama import Fore, Back, Style
 import timeit
-import heapq as hq
+#import heapq as hq
 
 from generate import generate
 from astar import forward_astar, backward_astar2, adaptive_astar
