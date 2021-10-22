@@ -21,3 +21,7 @@ the higher g-value bug is still present for grids with blocked off target
 
 *_Update 10/18_*
 higher g-value bug fixed for forward A*. fixed runner print outputs
+
+
+*_Update 10/21_*
+All forward A* bugs completely fixed. Made all versions of A* consistent with bug fix. Updated testing to be easier than before
