@@ -116,10 +116,7 @@ reason for the observation.
  \end{itshape}
 \begin {flushleft}
 Our Repeated Forward A* with larger g-values see on average 10.2\% more steps to reach the target with 154\% less cells expanded compared to lower g-values. In terms of runtime, larger g-values are 174\% faster than smaller g-values. 
-Larger g-values perform better because cells that have higher g-values encourage the agent to travel away from its current position. Of the set of cells with higher g-values it is often the case that when an agent moves to these cells, they get closer to reaching the target, which decreases those cells’ heuristic cost. Lower g-value cells by comparison do not always encourage movement that brings the agent closer to the Target. 
-
-The majority of the performance differences are a result of how cells are stored in the min heap.
-In the case of larger g-values, cells that bring the Agent closer to the Target take greater priority in the min heap. In the case of smaller g-values, many cells that do not necessarily bring the agent closer may take precedence. 
+Larger g-values perform better because cells that have higher g-values encourage the agent to travel away from its current position. Of the set of cells with higher g-values it is often the case that when an agent moves to these cells, they get closer to reaching the target. Lower g-value cells by comparison do not always encourage movement that brings the agent closer to the Target. The majority of the performance differences are a result of how cells are stored in the min heap. In the case of larger g-values, cells that bring the Agent closer to the Target take greater priority in the min heap. In the case of smaller g-values, many cells that do not necessarily bring the agent closer may take higher precedence.
 
 \end{flushleft}
 \section*{Part 3}
@@ -130,7 +127,8 @@ what you observed and give a reason for the observation. Both versions of Repeat
 the same f-value in favor of cells with larger g-values and remaining ties in an identical way, for example randomly.
   \end{itshape}
 \begin {flushleft}
-In a large majority of generated grids, Repeated Forward A* sees better performance than Repeated Backward A* by a huge margin. On average Forward A* sees 6.9\% greater steps to reach the target than Backward A*. However, Forward A* expands 191\% fewer cells and runs in 198\% less time. Backward A* involves so many more expansions than Forward A* because it expands cells from the Target location to the Agent and typically computes a path that naively assumes that areas around the Target are unblocked. This is mostly due to the agent not having reached near the target to inform the path compute function of blocked cells that would normally invalidate the computed path at each step. It is only until the Agent nears the Target and knows about unblocked cells throughout the grid when the expanded cells result in more valid paths for the Agent to follow. Forward A* does not face this issue as much since the expanded cells are relative to nearby cells of the agent in its current position on the grid. Thus, the compute path function can account for blocked cells that would invalidate a path much better compared to Backward A*.
+In a large majority of generated grids, Repeated Forward A* sees better performance than Repeated Backward A* by a huge margin. On average Forward A* sees 6.9\% greater steps to reach the target than Backward A*. However, Forward A* expands 191\% fewer cells and runs in 198\% less time. 
+Backward A* involves so many more expansions than Forward A*. The cells that are expanded starting from the Target have higher g-values than those closer to the Agent. Since higher g-values are used to break f-value ties in Backward A*, this results in cells that are closer to the Agent being expanded later than cells closer to the Target. Of the set of the cells near the Agent, only a portion of them are in the set of those in the computed path. Thus, the overall number of expansions for the Target to find the Agent become greater when computing a path compared to Forward A*.
 \end{flushleft}
 \section*{Part 4}
 
