@@ -1,0 +1,344 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, braket,mathtools}
+\usepackage{enumitem}
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{setspace}
+
+
+\title{Assignment1 \\
+Fast Trajectory Replanning}
+
+\author{Nicholas-Schenk (njs184)\\
+Charles Li (cl1217)\\
+Vibhu Ramanujam (var61)}
+
+\date{October 22, 2021}
+
+\begin{document}
+\maketitle
+
+
+\newpage
+
+%\begin{abstract}
+%Abstract -Do we need one
+%\end{abstract}
+
+
+\section*{Introduction}
+This assignment is about implementing variants of of A* algorithm in gridworld environment. This involves generating a 101 X 101 grid with maze like structure. This is created using depth-first approach. Start from a random cell, then go to a random neighbor that is not visited and mark them blocked with 30\% probability and continue till all the cells are visited.
+\\
+The following variants of A* are implemented.
+  \begin{itemize}
+    \item 
+      \begin{flushleft}
+        Repeated Forward A* is implemented. In one version, if the f-value is tied, the tie is broken in favor of the larger g-value and in another version the tie is broken in favor of the smaller s-value. The performance of both these versions are compared.
+        \end{flushleft}
+    \item
+		\begin{flushleft}
+        Implemented and performance compared Repeated Forward A* and Repeated Backward A* . The f-value tie is broken in favor of the larger g-value.
+         \end{flushleft}
+     \item
+		\begin{flushleft}
+        Implemented Adaptive A*, an improved version of A* wherein the experience of the earlier searches is used to update the h-value. This is compared with Repeated Forward A*.
+        \end{flushleft}
+      
+ \end{itemize}
+      
+\section*{Part 1}
+\begin{enumerate}[label=\alph*]
+  \item
+     \begin{flushleft}
+        \begin{itshape}
+       
+        Explain in your report why the first move of the agent for the example search problem from Figure 8  is to the east rather than the north given that the agent does not know initially which cells are blocked.
+       
+        \end{itshape}
+        
+The agent doesn’t know which cells are blocked when it starts to find the path. If it has full knowledge of the maze, then the best path is to the North and then go around 
+the obstacle. 
+
+	Since the agent doesn’t know, it has four options South, West, North and East. The first
+step in A* will be towards the shortest unblocked path.
+
+	It cannot go South as E2 is the bottom cell.
+	
+	The manhatten distance from the neighbors are:
+	
+	From North (D2) = 4
+	
+	From West (E1) = 4
+	
+	From East (E3) = 2 (shortest path)
+	
+	So, the first move from E2 the agent will make is to the East.
+
+     \end{flushleft}
+  \item
+  	\begin{flushleft}
+  	\begin{itshape}
+       
+  		This project argues that the agent is guaranteed to reach the target if it is not separated 
+from it by blocked cells. Give a convincing argument that the agent in finite gridworlds indeed either reaches the target or discovers that this is impossible
+in finite time. Prove that the number of moves of the agent until it reaches the target
+or discovers that this is impossible is bounded from above by the number of
+unblocked cells squared.
+        \end{itshape}
+       \vskip 0.5cm 
+The agent will reach the goal as the number of grids is finite. 
+In A*, there is a close list, so once it is expanded it will never go back to the open list. This will avoid infinite looping.
+If a cell is reachable from the start, the agent will visit them in a finite number of steps unless it is surrounded by blocked cells. 
+\vskip 0.1cm
+The algorithm terminates when it reaches the goal or when all the cells are visited. So, the
+algorithm is guaranteed to find a solution if it is not blocked.
+The worst-case scenario would be if all the cells are unblocked, and the agent start from an unblocked cell and visit and expand all the other unblocked cells. By visiting every cell, it is guaranteed to find the target if it is possible.
+\vskip 0.1cm
+If the number of unblocked cells is ‘n’ in a certain scenario:
+In the worst case, A* will expand all n nodes.  
+If A* start search from every unblocked cell (n) and the agent visits every other unblocked cell from every starting position it will expand n nodes n times.
+\vskip 0.1cm
+So, the upper limit on the moves by the agent is number of unblocked cells squared (n2)
+	\end{flushleft}
+ \end{enumerate}
+
+\section*{Part 2}
+ \begin{itshape}
+ The Effects of Ties: Repeated Forward A* needs to break ties to decide which cell to expand next if several cells have the same smallest f-value. It can either break ties in favor of cells with smaller g-values or in favor of cells with larger g-values. Implement and compare both versions of Repeated Forward A* with respect to their runtime or, equivalently, number of expanded cells. Explain your observations in detail, that is, explain what you observed and give a
+reason for the observation.
+ \end{itshape}
+\begin {flushleft}
+Our Repeated Forward A* with larger g-values see on average 10.2\% more steps to reach the
+target with 154\% less cells expanded compared to lower g-values. In terms of runtime, larger
+g-values are 174\% faster than smaller g-values.
+\\ 
+\vskip 0.3cm
+Larger g-values perform better because cells that have higher g-values encourage the agent to
+travel away from its current position. Of the set of cells with higher g-values it is often the case
+that when an agent moves to these cells, they get closer to reaching the target. Lower g-value
+cells by comparison do not always encourage movement that brings the agent closer to the
+Target. The majority of the performance differences are a result of how cells are stored in the
+min heap. In the case of larger g-values, cells that bring the Agent closer to the Target take
+greater priority in the min heap. In the case of smaller g-values, many cells that do not
+necessarily bring the agent closer may take higher precedence. 
+
+\end{flushleft}
+\section*{Part 3}
+  \begin{itshape}
+Forward vs. Backward: Implement and compare Repeated Forward A* and Repeated Backward A*
+with respect to their runtime or, equivalently, number of expanded cells. Explain your observations in detail, that is, explain
+what you observed and give a reason for the observation. Both versions of Repeated A* should break ties among cells with
+the same f-value in favor of cells with larger g-values and remaining ties in an identical way, for example randomly.
+  \end{itshape}
+\begin {flushleft}
+In a large majority of generated grids, Repeated Forward A* sees better performance than
+Repeated Backward A* by a huge margin. On average Forward A* sees 6.9\% greater steps to
+reach the target than Backward A*. However, Forward A* expands 191\% fewer cells and runs in
+198\% less time.
+\\
+\vskip 0.3cm
+Backward A* involves so many more expansions than Forward A*. The cells that are expanded
+starting from the Target have higher g-values than those closer to the Agent. Since higher
+g-values are used to break f-value ties in Backward A*, this results in cells that are closer to the
+Agent being expanded later than cells closer to the Target. Of the set of the cells near the
+Agent, only a portion of them are in the set of those in the computed path. Thus, the overall
+number of expansions for the Target to find the Agent become greater when computing a path
+compared to Forward A*.
+\end{flushleft}
+\section*{Part 4}
+
+        \begin{itshape}
+       The project argues that “the Manhattan distances are consistent in gridworlds in which the agent can move only in the four main compass directions.” Prove that this is indeed the case.
+\vskip 0.5cm
+Furthermore, it is argued that “The h-values 
+$h_{new}$(s) ... are not only admissible but also consistent.” Prove that Adaptive A* leaves initially consistent h-values consistent even if action costs can increase.
+         \end{itshape}
+         
+ \begin{enumerate}[label=\alph*]
+    \item
+    \begin{flushleft}
+
+   A heuristic h(n) is consistent if, for every node n and every successor n’ of n generated by any action a, the estimated cost of reaching the goal from n is no greater than the step cost of getting to n’ plus the estimated cost of reaching the goal from n’. In other words, the heuristic function must underestimate the actual path cost and the following triangular inequality must hold.
+   \vskip 0.5cm
+\hspace {2em}     
+h(n) ≤ step cost (to neighbor n’) + h(n’)
+\vskip 0.5cm
+     Manhattan distance is calculated by adding the horizontal and the vertical path.
+In the gridworld, Manhattan distance is always the same and it is the fastest path 
+possible to reach the goal as the agent can move only up, down, left, or right. 
+Here, the agent cannot move diagonally and so the agent will always find the 
+shortest path. So, Manhattan distance is consistent. If the agent can go diagonally, 
+the heuristic can overestimate the distance to reach the target.
+\vskip 0.5cm
+To Prove that Adaptive A* is consistent:
+
+Since, h-values are consistent, and h(s) follows Manhattan Heuristics.
+   \begin{spacing}{2}
+$h_{new}$(s) = g($s_{goal}$)  –  g(s).     ------ 1
+
+c(s,a,s’) – Step cost of going from s to s’ using action a is ONE.
+
+The triangular inequality says:
+
+\hspace {2em}
+h(s) ≤ h(s’) + c(s,a,s’)
+
+We have to prove $h_{new}$(s) ≤ $h_{new}$(s’) + c(s,a,s’)
+
+Substituting (from 1) 
+$h_{new}$(s) = g($s_{goal}$) – g(s) and
+ 
+$h_{new}$(s’) = g($s_{goal}$) –  g(s’) above ,
+
+We get g($s_{goal}$) – g(s) ≤ g($s_{goal}$)– g(s’) + c(s,a,s’)
+
+Simplifying we get:
+
+=> g(s) ≥ g(s’) – c(s,a,s’)
+\end{spacing}
+This is TRUE because:
+
+\begin{itemize}
+    \item In Manhattan Heuristics c(s,a,s’) is always ONE
+    \item If g(s’) is smaller than g(s), subtracting ONE from it will make it still smaller by ONE
+    \item If g(s’) is greater than g(s), subtracting ONE from it will make them equal
+\end{itemize}
+
+So, h-values $h_{new}$(s) are consistent.
+
+\end{flushleft}
+
+\item
+\begin{flushleft}
+
+
+\begin{itshape}
+Now, to prove that Adaptive A* leaves initially consistent h-values consistent even if action costs can increase:
+\end{itshape}
+
+Let us again consider the triangular inequality:
+
+$h_{new}$(s) ≤ $h_{new}$(s') + c(s,a,s’)
+
+Let there be a cost increase and c(s,a,s’)  be the cost before and c’(s,a,s’) be the cost
+after the increase.
+
+Now $h_{new}$(s) ≤  $h_{new}$(s') + c(s,a,s’)  ≤  $h_{new}$(s') + c’(s,a,s’)  
+
+So, we can see that the heuristic is consistent with action cost increase.
+        
+    \end{flushleft}
+   \end{enumerate}
+\section*{Part 5}
+\begin{itshape}
+Heuristics in the Adaptive A*: Implement and compare Repeated Forward A* and Adaptive A*
+with respect to their runtime. Explain your observations in detail, that is, explain what you observed and give a reason for
+the observation. Both search algorithms should break ties among cells with the same f-value in favor of cells with larger
+g-values and remaining ties in an identical way, for example randomly.
+\end{itshape}
+
+\begin{flushleft}
+\hspace {1em}
+Across 100 grids with dimensions 101 X 101, our Adaptive A* algorithm took, on
+average, 2124.34 expansions to reach the target. Forward A*, on the other hand, took an
+average of 2203.06 expansions to reach the target, showing that Adaptive A* is 3.57\% more
+efficient.
+\\
+\hspace {1em}
+It is unsurprising that Adaptive A* is faster because it improves the h value after each
+iteration of A* by making a more informed guess. Adaptive A*’s estimate of the goal distance for
+a state is found by taking the goal distance of the start state and subtracting the distance from
+the start state to state s. As proven in the assignment write-up, this is admissible. Adaptive A*
+updates the heuristic value for all states expanded during an A* search and increases them,
+therefore makes them less likely to be visited in future A* searches. In all, this makes the
+Adaptive A* much more focused and more efficient. This updated heuristic also can only ever
+increase the h value of a cell, not decrease it. This guarantees that the algorithm never makes
+the agent more likely to revisit a cell during A* and only can help it or be neutral.
+\\
+\hspace {1em}
+That being said, the agent does not know the entire grid at the start and therefore
+occasionally paths that seem better based on Adaptive A* actually end up being marginally
+worse. The agent may end up getting stuck in a hole which it was unable to foresee, leading to
+the “better” h values actually resulting in being less efficient. This, however, does not happen
+nearly often enough to offset the increase in efficiency that Adaptive A* offers.
+
+\end{flushleft}
+
+\section*{Part 6}
+\begin{itshape}
+Performance differences between two search algorithms can be systematic in nature or only due to sampling noise (= bias exhibited by the selected test cases since the number of test cases is always limited). One can use statistical hypothesis tests to determine whether they are systematic in nature. Read up on statistical hypothesis tests (for example, in Cohen, Empirical Methods for Artificial Intelligence, MIT Press, 1995) and then describe for one of the experimental questions above exactly how a statistical hypothesis test could be performed. You do not need
+to implement anything for this question, you should only precisely describe how such a test could be performed.
+\end{itshape}
+
+\vskip 0.5cm
+\begin {flushleft}
+Null Hypothesis: H0: Repeated Forward A* = Adaptive A*: Meaning there is no systematic difference between the two algorithms
+
+Alternate Hypothesis: H1: There is systematic difference. (inverse of the Null Hypothesis)
+
+Steps for statistical hypothesis test:
+\end{flushleft}
+
+\begin{enumerate}
+   \item
+	 \begin {flushleft}
+	 Under the null hypothesis, the test assumes that two samples were drawn from the same experiment setup (population), meaning identical grid with same start and target.
+	 \end{flushleft}
+   \item
+	 \begin {flushleft}
+	 Run experiments and record results. compute respective sample mean and sample standard deviation. Let delta ($\Delta$) be the difference in their means. 
+	 \end{flushleft}
+    \item
+	 \begin {flushleft}
+	 One can choose either two sample z test (Reference) (for large sample size) or two sample t test (for small sample size) to test the significance of the difference between the two samples.
+	  \end{flushleft}
+	\item
+	 \begin {flushleft}
+Find the distribution of $\Delta$ under the assumption that the null hypothesis is true, 
+Forward A* = Adaptive A*
+	 \end{flushleft}
+   \item
+	 \begin {flushleft}
+Use this distribution to find the probability p of $\Delta$, assuming Forward A* = Adaptive A*
+	 \end{flushleft}
+   \item
+	 \begin {flushleft}
+	 If the probability is very low (if p <.01), meaning \text{99\%} confidence,	  
+reject null Hypothesis H0: Forward A* = Adaptive A*
+
+(p value is the probability of incorrectly rejecting $H_0$)
+	 \end{flushleft}
+   \item
+	 \begin {flushleft}
+	 p<.01 is the residual uncertainty that Forward A* might equal Adaptive A*
+	 \end{flushleft}
+  \end{enumerate}
+  If experimental setup (population) standard deviation is unknown and samples are small, we can use the t test.
+  
+In this case we assume the sampling distribution to be t, not normal, but approaches normal as samples size increases. The test statistic has very similar form as normal, but probabilities of the test statistic are obtained by consulting tables of the t distribution, not the standard normal distribution.
+  \hspace {4em}
+  \begin{align*}
+  	t&=\frac{(mean(forward A\textsuperscript{*}) - mean(adaptive A\textsuperscript{*}))}{\text{weighted  average of the two sample standard deviations}}
+  \end{align*}
+
+The Z test (Reference) involves nothing more than standardizing the difference between ($\mu$), the mean of the sampling distribution under the null hypothesis and the sample mean $\overline{x}$.
+
+\[z = \frac{\overline{x} - \mu}{\sigma\overline{x}}\]
+
+\newpage
+\bibliographystyle{abbrvnat} 
+\bibliography{}
+\section*{References}
+ Empirical Methods for Artificial Intelligence. 
+USC Information Sciences Institute
+© Paul Cohen, 2006
+\\
+ url = {http://www.eecs.harvard.edu/cs286r/courses/spring08/reading6/CohenTutorial.pdf}
+\end{document}
