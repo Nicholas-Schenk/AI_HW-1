@@ -1,0 +1,18 @@
+﻿2. The Effects of Ties [15 points]: Repeated Forward A* needs to break ties to decide which cell to expand next if several cells have the same smallest f-value. It can either break ties in favor of cells with smaller g-values or in favor of cells with larger g-values. Implement and compare both versions of Repeated Forward A* with respect to their runtime or, equivalently, number of expanded cells. Explain your observations in detail, that is, explain what you observed and give a reason for the observation.
+
+
+
+
+Our Repeated Forward A* with larger g-values see on average 10.2% more steps to reach the target with 154% less cells expanded compared to lower g-values. In terms of runtime, larger g-values are 174% faster than smaller g-values. 
+
+
+Larger g-values perform better because cells that have higher g-values encourage the agent to travel away from its current position. Of the set of cells with higher g-values it is often the case that when an agent moves to these cells, they get closer to reaching the target. Lower g-value cells by comparison do not always encourage movement that brings the agent closer to the Target. The majority of the performance differences are a result of how cells are stored in the min heap. In the case of larger g-values, cells that bring the Agent closer to the Target take greater priority in the min heap. In the case of smaller g-values, many cells that do not necessarily bring the agent closer may take higher precedence.
+
+
+3. Forward vs. Backward [20 points]: Implement and compare Repeated Forward A* and Repeated Backward A* with respect to their runtime or, equivalently, number of expanded cells. Explain your observations in detail, that is, explain what you observed and give a reason for the observation. Both versions of Repeated A* should break ties among cells with the same f-value in favor of cells with larger g-values and remaining ties in an identical way, for example randomly.
+
+
+In a large majority of generated grids, Repeated Forward A* sees better performance than Repeated Backward A* by a huge margin. On average Forward A* sees 6.9% greater steps to reach the target than Backward A*. However, Forward A* expands 191% fewer cells and runs in 198% less time. 
+
+
+Backward A* involves so many more expansions than Forward A*. The cells that are expanded starting from the Target have higher g-values than those closer to the Agent. Since higher g-values are used to break f-value ties in Backward A*, this results in cells that are closer to the Agent being expanded later than cells closer to the Target. Of the set of the cells near the Agent, only a portion of them are in the set of those in the computed path. Thus, the overall number of expansions for the Target to find the Agent become greater when computing a path compared to Forward A*.
